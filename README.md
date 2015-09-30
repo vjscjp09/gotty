@@ -1,4 +1,8 @@
-# ![](https://raw.githubusercontent.com/yudai/gotty/master/resources/favicon.png) GoTTY - Share your terminal as a web application
+#A Shipped GoTTY
+
+This sample application demonstrates creating and deploying a Shipped project from an existing GitHub repository. 
+
+ GoTTY - Share your terminal as a web application
 
 [![GitHub release](http://img.shields.io/github/release/yudai/gotty.svg?style=flat-square)][release]
 [![Wercker](http://img.shields.io/wercker/ci/55d0eeff7331453f0801982c.svg?style=flat-square)][wercker]
@@ -13,30 +17,8 @@ GoTTY is a simple command line tool that turns your CLI tools into web applicati
 
 ![Screenshot](https://raw.githubusercontent.com/yudai/gotty/master/screenshot.gif)
 
-# Installation
 
-Download the latest binary file from the [Releases](https://github.com/yudai/gotty/releases) page.
-
-(`darwin_amd64.tar.gz` is for Mac OS X users)
-
-## Homebrew Installation
-
-You can install GoTTY with [Homebrew](http://brew.sh/) as well.
-
-```sh
-$ brew tap yudai/gotty
-$ brew install gotty
-```
-
-## `go get` Installation
-
-If you have a Go language environment, you can install GoTTY with the `go get` command.
-
-```sh
-$ go get github.com/yudai/gotty
-```
-
-# Usage
+## Usage
 
 ```
 Usage: gotty [options] <command> [<arguments...>]
@@ -46,7 +28,7 @@ Run `gotty` with your preferred command as its arguments (e.g. `gotty top`).
 
 By default, GoTTY starts a web server at port 8080. Open the URL on your web browser and you can see the running command as if it were running on your terminal.
 
-## Options
+### Options
 
 ```
 --address, -a                                                IP address to listen [$GOTTY_ADDRESS]
@@ -68,116 +50,173 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 
 ```
 
-### Config File
 
-You can customize default options and your terminal (hterm) by providing a config file to the `gotty` command. GoTTY loads a profile file at `~/.gotty` by default when it exists.
+## Setting Up on Shipped
 
-```
-// Listen at port 9000 by default
-port = "9000"
+### Step 1. Get a GitHub Account
+[Git](https://git-scm.com/) is a source and version control system hosted on the web, and [GitHub](https://github.com/) is a repository of Git projects. Shipped stores your projects on GitHub, and you'll need a GitHub account to use Shipped. If you already have a GitHub account, skip to step 2. Otherwise, navigate to the [GitHub home page](https://github.com/) using any modern browser (we recommend Chrome), click on [Sign up](https://github.com/join) and follow the instructions to create a free account. You don't need to do anything more with GitHub at this time; Shipped will do it all for you.
 
-// Enable TSL/SSL by default
-enable_tls = true
+### Step 2 Fork the goTTY project
+Fork CiscoCloud/gotty as your repository master project branch.  This sets up goTTY as the sample repository that you'll use for your Shipped project.
 
-// hterm preferences
-// Smaller font and a little bit bluer background color
-preferences {
-    font_size = 5,
-    background_color = "rgb(16, 16, 32)"
-}
-```
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/fork.Png)
 
-See the [`.gotty`](https://github.com/yudai/gotty/blob/master/.gotty) file in this repository for the list of configuration options.
+### Step 3 Download the Shipped CLI
+You can compose a Shipped project either with the Shipped web UI at [http://shipped-cisco.com](http://shipped-cisco.com) or with the Shipped CLI.  However, even if you compose your project online, you'll still need the CLI to bootstrap it to your local laptop, so the first step in using Shipped is to download the CLI.  Download from the appropriate link below:
 
-### Security Options
+OS | Download URL
+---- | -------------------
+linux | https://bintray.com/artifact/download/shippedrepos/shipped-cli/linux/shipped (5.9 MB)
+linux (compressed) | https://bintray.com/artifact/download/shippedrepos/shipped-cli/linux/shipped.gz (1.7 MB)
+mac | https://bintray.com/artifact/download/shippedrepos/shipped-cli/mac/shipped (6.3 MB)
+mac (compressed) | https://bintray.com/artifact/download/shippedrepos/shipped-cli/mac/shipped.gz (1.8 MB)
+windows | https://bintray.com/artifact/download/shippedrepos/shipped-cli/windows/shipped.exe (6 MB)
+windows (compressed) | https://bintray.com/artifact/download/shippedrepos/shipped-cli/windows/shipped.zip (1.7 MB)
 
-By default, GoTTY doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the TTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. When you need interaction with the TTY for some reasons, consider starting GoTTY with tmux or GNU Screen and run your command on it (see "Sharing with Multiple Clients" section for detail).
+The compressed links contain the same executables as the standard links, but may take less time to download (though you'll need to decompress them after the download). Once you've downloaded an executable, copy it to a directory in your path.   Issue the command:
 
-To restrict client access, you can use the `-c` option to enable the basic authentication. With this option, clients need to input the specified username and password to connect to the GoTTY server. The `-r` option is a little bit casualer way to restrict access. With this option, GoTTY generates a random URL so that only people who know the URL can get access to the server. Note that the credentical will be transmitted between the server and clients in plain text.
+    shipped -v
 
-All traffic between the server and clients are NOT encrypted by default. When you send secret information through GoTTY, we strongly recommend you use the `-t` option which enables TLS/SSL on the session. By default, GoTTY loads the crt and key files placed at `~/.gotty.crt` and `~/.gotty.key`. You can overwrite these file paths with the `--tls-crt` and `--tls-key` options. When you need to generate a self-signed certification file, you can use the `openssl` command.
+to verify you've successfully downloaded and deployed the Shipped CLI.  You should see a response similar to:
 
-```sh
-openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~/.gotty.crt
-```
+> Cisco Shipped 1.0 b103 20150919 001714
 
-(NOTE: For Safari uses, see [how to enable self-signed certificates for WebSockets](http://blog.marcon.me/post/24874118286/secure-websockets-safari) when use self-signed certificates)
+### Step 4 Compose and Deploy your Project with the Shipped CLI
+This step explains how to compose and deploy your project entirely with the Shipped CLI.  If you'd prefer to use the web UI, skip this step and go to Step 5.
 
-## Sharing with Multiple Clients
+To compose your project with the Shipped CLI, first obtain a terminal window:
 
-GoTTY starts a new process with the given command when a new client connects to the server. This means users cannot share a single terminal with others by default. However, you can use terminal multiplexers for sharing a single process with multiple clients.
+| Os Type | Action          |
+| ------------------- | -------------------- |
+| OS X (Mac)|	Press Command + Space to open Spotlight Search. Type Terminal and double-click the Terminal Application. Menu option Shell -> New Window will open a new window for you. |
+| Ubuntu |	Press Ctrl+Alt+T |
+| Windows |	Click Start, type "cmd", and press Enter for a normal terminal window, or Ctrl+Shift+Enter for an Administrator terminal window. You will need an Administrator window if the bootstrap process needs to install Vagrant and VirtualBox. If you already have this software installed, you can use a normal terminal window. |
 
-For example, you can start a new tmux session named `gotty` with `top` command by the command below.
+Once you have the terminal window open, enter the following command:
 
-```sh
-$ gotty tmux new -A -s gotty top
-```
+    shipped run create-and-deploy project=MyProject service=gotty framework=express [fast="--fast"]
 
-This command doesn't allow clients to send keystrokes, however, you can attach the session from your local terminal and run operations like switching the mode of the `top` command. To connect to the tmux session from your terminal, you can use following command.
+This command is all you need to create your project and deploy it to the Cloud!  Use the **project** argument to provide a name for your project (you can call it anything you want); specify the **service** and **framework** arguments exactly as shown; and specify the optional **fast="--fast"** argument to suppress building a VM on your laptop for local deployment (which saves two or three minutes of bootstrap time, but doesn't run the application locally).
 
-```sh
-$ tmux new -A -s gotty
-```
+This command does the following:
 
-By using terminal multiplexers, you can have the control of your terminal and allow clients to just see your screen.
+* Creates the project and service in the Shipped database
+* Sets up a remote GitHub repository in the Cloud
+* Sets up a continuous integration (CI) build that rebuilds your project automatically after every commit
+* Downloads project source code into a local Git repository on your laptop
+* If necessary, installs prerequisite software (Vagrant and Virtualbox)
+* Optionally creates a VM on your laptop to build and run the service
+* Makes a commit to the Git repository that starts the first build
+* Sets up a cloud environment where you can deploy your project
+* Waits for the build to complete and deploys the project to the cloud
 
-### Quick Sharing on tmux
+Once it completes, you'll have your application running both on your laptop and in the cloud.  That's how easy it is to get started with Shipped!
 
-To share your current session with others by a shortcut key, you can add a line like below to your `.tmux.conf`.
+Create-and-deploy is an example of a Shipped CLI script that runs several CLI commands in succession.  You can see the contents of the script with the command:
 
-```
-# Start GoTTY in a new window with C-t
-bind-key C-t new-window "gotty tmux attach -t `tmux display -p '#S'`"
-```
+    shipped script list create-and-deploy
 
-## Playing with Docker
+The commands in the script perform the same tasks as the Shipped UI actions described in the next step.  You can get an overview of some CLI commands by following along with the script as you read through the next step.  For more detailed documentation on the CLI, use its help command,
 
-When you want to create a jailed environment for each client, you can use Docker containers like following:
+    shipped help
 
-```sh
-$ gotty -w docker run -it --rm busybox
-```
+### Step 5. Compose and Deploy Your Project with the Shipped UI
+If you've composed your project with the CLI, you can skip this step.  However, if you prefer to compose your project online - or would just like to see how it's done - just use any modern browser (we recommend Chrome) to navigate to the [Shipped welcome page](http://shipped-cisco.com). 
 
-## Development
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/home.Png) 
+#### Step 5.1 Login to Shipped
+Your GitHub account is all you need to login to Shipped, so click on the big green "Sign up with GitHub" button.   
 
-You can build a binary using the following commands. Windows is not supported now.
+If this is your first project, Shipped automatically pops up a Create New Project form; if not, select Create New Project from the Your Projects dropdown to get the popup:
 
-```sh
-# Install tools
-go get github.com/jteeuwen/go-bindata/...
-go get github.com/tools/godep
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/createproject.Png)
 
-# Checkout hterm
-git submodule sync && git submodule update --init --recursive
+Enter a name for your project (we'll use "Sample" for this project) and press Start Composing. Shipped displays a list of development services:
 
-# Restore libraries in Godeps
-godep restore
+#### Step 5.2 Add a service
+The development services listed are examples of what Shipped calls "microservices" - supporting services used by a project. We can choose as many microservices as needed for a project. Shipped installs whatever is needed to deploy the selected microservices on one of the VMs it creates for you. 
+ 
+For this project we'll select **GoLang** which create a golang VM with everything needed to build and run an GoLang project like goTTY.
 
-# Build
-make
-```
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/selectservice.Png)
 
-## Architecture
+Click on the Select button to the right of this service. Shipped pops up the Service Configuration form that you'll use to specify the GitHub repository where Shipped stores the source code using the service:
+ 
+#### Step 5.3 Configure the Service 
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/selectrepo.Png)
 
-GoTTY uses [hterm](https://groups.google.com/a/chromium.org/forum/#!forum/chromium-hterm) to run a JavaScript based terminal on web browsers. GoTTY itself provides a websocket server that simply relays output from the TTY to clients and receives input from clients and forwards it to the TTY. This hterm + websocket idea is inspired by [Wetty](https://github.com/krishnasrinivas/wetty).
+This form allow us to specify:
 
-## Alternatives
+| Name | Description          |
+| ------------------- | -------------------- |
+| Name of GitHub Repository|	The name of the GitHub repository where Shipped stores the source code using this service. Shipped automatically creates the repository if necessary.  *For this example, we'll use the repository you forked in Step 2 and specify* gotty *for the repository name.* |
+| GitHub Organization|	The GitHub account owning the repository. This can be your personal account, or the account of a company or organization associated with your account.  *For this example, specify the account where you forked the gotty repository.* |
+| Private Public |	The type of repository to create.  Private repositories are available only to specific GitHub users; public repositories are viewable by any web user. You need a paid GitHub account to create a private repository.  *For this example, specify Public, as your fork of a public repository must also be public.*  |
+ 
+#### Step 5.4 Build Your Project
+ 
+Specify "gotty" for the repository name and press Add Service. Shipped re-displays the Compose Your Project form with the repository name for the selected service above the Build Project button.
 
-### Command line client
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/buildproject.Png)
 
-* [gotty-client](https://github.com/moul/gotty-client): If you want to connect to GoTTY server from your terminal
+To build your project, press the Build Project button. The button label changes to Building, and a status bar moves across the button while Shipped creates your GitHub repository and stores the description of your project in its database. When it's finished, it pops up the Let's Get Set Up form containing the command to bootstrap the project on your computer:
 
-### Terminal/SSH on Web Browsers
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/buildlocal.Png)
 
-* [Secure Shell (Chrome App)](https://chrome.google.com/webstore/detail/secure-shell/pnhechapfaindjhompbnflcldabbghjo): If you are a chrome user and need a "real" SSH client on your web browser, perhaps the Secure Shell app is what you want
-* [Wetty](https://github.com/krishnasrinivas/wetty): Node based web terminal (SSH/login)
+#### Step 5.5 Bootstrap Your Local Development Environment
+Bootstrapping a Shipped project means:
 
-### Terminal Sharing
+-  Downloads the project's source code to your machine
+-  Sets up a local Git repository tied to the cloud-based repository created by Shipped
+-  If necessary, installs the prerequisite software Vagrant and VirtualBox
+-  Optionally creates the virtual machines that host your development environment
 
-* [tmate](http://tmate.io/): Forked-Tmux based Terminal-Terminal sharing
-* [termshare](https://termsha.re): Terminal-Terminal sharing through a HTTP server
-* [tmux](https://tmux.github.io/): Tmux itself also supports TTY sharing through SSH)
+The process is fully automatic; you just need to copy and paste the command presented by Shipped when you created the project.
 
-# License
+The bootstrap process runs in a command-line terminal window, so the first step in bootstrapping your project is opening a terminal window. The way you do this depends on your operating system:
 
-The MIT License
+| Os Type | Action          |
+| ------------------- | -------------------- |
+| OS X (Mac)|	Press Command + Space to open Spotlight Search. Type Terminal and double-click the Terminal Application. Menu option Shell -> New Window will open a new window for you. |
+| Ubuntu |	Press Ctrl+Alt+T |
+| Windows |	Click Start, type "cmd", and press Enter for a normal terminal window, or Ctrl+Shift+Enter for an Administrator terminal window. You will need an Administrator window if the bootstrap process needs to install Vagrant and VirtualBox. If you already have this software installed, you can use a normal terminal window. |
+
+When you completed creating your project in the previous step, Shipped popped up the Let's Get Set Up form containing commands to download the CLI and bootstrap your project:
+
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/buildlocal.Png)
+
+Since you already installed the Shipped CLI in Step 3, you only need to copy the second command and paste it into your terminal window.  This command looks something like this:
+
+    shipped -t wxkOzQgIgoxSuekHjuyMdMjCIbrKJAcO local bootstrap 65a1fcb4-6141-11e5-befb-0242ac113ce8
+
+If you don't want to create a VM hosting your development environment, append the argument **--fast** to the end of this line.  This saves two or three minutes of bootstrap time, but skips local deployment of the project.  If you choose this option, you can create the VM at a later time by rerunning the bootstrap command without **--fast**.
+
+Press Enter to start the bootstrap process.  While bootstrap runs, the Shipped UI displays a circular animation ticking off each step in the bootstrap process as it happens:
+
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/buildstatus.Png) 
+
+#### Step 5.6 Run a Build
+
+When you created the project, Shipped set up both a GitHub repository in the cloud and a continuous integration (CI) build, so that any commit to the repository automatically triggers a build.  When you bootstrapped the project, Shipped stored the application's source code in a local Git repository tied to the GitHub repository.  To start a build, all you need to is commit changes to the GitHub repository.  When the bootstrap process completes, the Shipped browser window displays the commit command you need to run your first build:
+
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/pushbuild.Png)
+
+Once again, select the command by clicking on it and copy and paste it into your terminal window. The command changes the directory to the one containing your new local Git repository and commits the initial copy of the application source to your cloud-based remote Git repository.
+
+This automatically triggers a build, as you can in the event section of your browser window
+
+#### Step 5.7 Create an Environment to Deploy Your Project to the Cloud
+
+The last step in the bootstrap process is deploying your project's application to the Cisco cloud. To do this, click on the Deploy tab at the top left of the screen. Shipped displays the Deploy tab with a message that there are currently no deployed environments:
+
+Create a new Environment by clicking on the New Environment button in the upper right corner of the form.  Shipped displays the New Environment form:
+
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/newenv.Png)
+
+Specify a name for your environment and click Add Environment.
+
+#### Step 5.8 Deploy Your Project to the  Environment.
+Click on the build in the Select Build column, the environment in the Select Environment column, and then on the Deploy Build button.  Shipped shows the message "Deploying to environment..." under the environment name, and a short time later replaces it with a "Deployed successfully" message:
+![](https://github.com/CiscoCloud/gotty/blob/master/shipped/images/deploy.Png)
+
+Congratulations! You've deployed your gotty application to the cloud. Click on the URL in the "Deployed successfully" message to see the application running in its new environment
